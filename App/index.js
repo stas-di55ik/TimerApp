@@ -8,6 +8,7 @@ import {
     Dimensions,
     TextInput,
 } from 'react-native';
+import { Audio } from 'expo-av';
 
 const screen = Dimensions.get('window');
 
@@ -60,17 +61,18 @@ const getRemaining = (time) => {
     return { minutes: formatNumber(minutes), seconds: formatNumber(seconds) };
 }
 
-export default class App extends React.Component {
+class App extends React.Component {
     state = {
         isRunning: false,
         minutesInput: '',
-        secondsInput: ''
+        secondsInput: '',
+        remainingSeconds: 0,
+        sound: null
     };
 
-    interval = null;
-
-    componentDidUpdate(prevProp, prevState) {
+    async componentDidUpdate(prevProp, prevState) {
         if (this.state.remainingSeconds === 0 && prevState.remainingSeconds !== 0) {
+            await this.playSound();
             this.stop();
         }
     }
@@ -79,6 +81,14 @@ export default class App extends React.Component {
         if (this.interval) {
             clearInterval(this.interval);
         }
+    }
+
+    playSound = async () => {
+        console.log('Loading Sound');
+        const { sound } = await Audio.Sound.createAsync(require('../assets/old-car-horn.mp3'));
+        this.setState({ sound });
+        console.log('Playing Sound');
+        await sound.playAsync();
     }
 
     handleMinutesChange = (text) => {
@@ -173,3 +183,5 @@ export default class App extends React.Component {
         );
     }
 }
+
+export default App;
